@@ -1,6 +1,9 @@
+from django.contrib.auth import authenticate
 from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
 
@@ -32,3 +35,14 @@ class UserViewSet(
         }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'])
+    def tokens(self, request, *args, **kwargs):
+        user = authenticate(username=request.data['email'], password=request.data['password'])
+
+        if user is not None:
+            token = Token.objects.get(user=user)
+
+            return Response({"token": token.key})
+        else:
+            raise AuthenticationFailed()

@@ -1,7 +1,9 @@
 import json
 
 from assertpy import assert_that
+from model_bakery import baker
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 from users.models import User
@@ -42,3 +44,18 @@ class UserViewSetTestCase(APITestCase):
         assert_that(response.status_code).is_equal_to(status.HTTP_400_BAD_REQUEST)
         user = User.objects.filter(email=user_data['email'])
         assert_that(user).is_empty()
+
+    def test_get_token(self):
+        user_data = {
+            'email': 'testuser@test.com',
+            'password': 'password123',
+        }
+        user = baker.make('users.User', email=user_data['email'])
+        user.set_password(user_data['password'])
+        user.save()
+        expected_token, _created = Token.objects.get_or_create(user=user)
+
+        response = self.client.post('/users/tokens/', data=json.dumps(user_data), content_type='application/json')
+
+        assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
+        assert_that(response.data['token']).is_equal_to(expected_token.key)
