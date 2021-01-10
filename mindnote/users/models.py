@@ -40,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     email = models.EmailField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
-    profile_image_url = models.URLField(max_length=200, null=True, blank=True)
+    profile_image_url = models.URLField(max_length=200, blank=True)
 
     is_active = models.BooleanField(default=True, verbose_name='활성화 여부')
     is_superuser = models.BooleanField(default=False)

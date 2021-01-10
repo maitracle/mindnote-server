@@ -41,6 +41,7 @@ DJANGO_APPS = [
 
 PACKAGE_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 PROJECT_APPS = [
