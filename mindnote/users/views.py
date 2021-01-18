@@ -1,10 +1,12 @@
 from django.contrib.auth import authenticate
 from django.db import transaction
+from django_rest_framework_mango.mixins import PermissionMixin
 from rest_framework import viewsets, status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin
+from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from users.models import User
@@ -12,11 +14,17 @@ from users.serializers import UserSerializer, TokenSerializer
 
 
 class UserViewSet(
+    PermissionMixin,
     UpdateModelMixin, DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_by_actions = {
+        'create': (AllowAny,),
+        'tokens': (AllowAny,),
+        'my_profile': (IsAuthenticated,),
+    }
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -45,3 +53,9 @@ class UserViewSet(
             return Response(serializer.data)
         else:
             raise AuthenticationFailed()
+
+    @action(detail=False, methods=['post'], url_path='my-profile')
+    def my_profile(self, request, *args, **kwargs):
+        serializer = self.get_serializer(request.user)
+
+        return Response(serializer.data)

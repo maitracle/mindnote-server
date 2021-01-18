@@ -26,12 +26,9 @@ class UserViewSetTestCase(APITestCase):
         user = User.objects.get(email=user_data['email'])
 
         assert_that(response.data['user']['id']).is_equal_to(user.id)
-        assert_that(response.data['user']['email']).is_equal_to(user_data['email'])
+        self._assert_user(response.data['user'], user)
         hashed_password_prefix = 'pbkdf2_sha256$216000$'
         assert_that(response.data['user']['password'].startswith(hashed_password_prefix)).is_true()
-        assert_that(response.data['user']['name']).is_equal_to(user_data['name'])
-        blank_string = ''
-        assert_that(response.data['user']['profile_image_url']).is_equal_to(blank_string)
 
     def test_should_not_create(self):
         user_data = {
@@ -60,10 +57,7 @@ class UserViewSetTestCase(APITestCase):
 
         assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
         assert_that(response.data['token']).is_equal_to(expected_token.key)
-        assert_that(response.data['user']['id']).is_equal_to(user.id)
-        assert_that(response.data['user']['email']).is_equal_to(user.email)
-        assert_that(response.data['user']['name']).is_equal_to(user.name)
-        assert_that(response.data['user']['profile_image_url']).is_equal_to(user.profile_image_url)
+        self._assert_user(response.data['user'], user)
 
     def test_should_not_get_token(self):
         user_data = {
@@ -83,3 +77,25 @@ class UserViewSetTestCase(APITestCase):
         assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
         assert_that(response.data['detail']).is_equal_to(AuthenticationFailed.default_detail)
         assert_that(hasattr(response.data, 'user')).is_false()
+
+    def test_should_get_my_profile(self):
+        user = baker.make('users.User')
+
+        self.client.force_authenticate(user=user)
+        response = self.client.post('/users/my-profile/', content_type='application/json')
+
+        assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
+        self._assert_user(response.data, user)
+
+    def test_should_not_get_my_profile(self):
+        response = self.client.post('/users/my-profile/', content_type='application/json')
+
+        assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
+        assert_that(hasattr(response.data, 'user')).is_false()
+
+    @staticmethod
+    def _assert_user(response_user, expect_user):
+        assert_that(response_user['id']).is_equal_to(expect_user.id)
+        assert_that(response_user['email']).is_equal_to(expect_user.email)
+        assert_that(response_user['name']).is_equal_to(expect_user.name)
+        assert_that(response_user['profile_image_url']).is_equal_to(expect_user.profile_image_url)
