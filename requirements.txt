@@ -5,6 +5,7 @@ Django==3.1.5
 django-cors-headers==3.6.0
 djangorestframework==3.12.2
 djangorestframework-camel-case==1.2.0
+djangorestframework-mango==0.1.1
 jsonschema==3.2.0
 model-bakery==1.2.1
 numpy==1.19.5
