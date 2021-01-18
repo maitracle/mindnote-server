@@ -8,7 +8,7 @@ from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin
 from rest_framework.response import Response
 
 from users.models import User
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, TokenSerializer
 
 
 class UserViewSet(
@@ -29,10 +29,7 @@ class UserViewSet(
 
         token, created = Token.objects.get_or_create(user=created_user)
 
-        response_data = {
-            'token': token.key,
-            'user': user_serializer.data,
-        }
+        response_data = TokenSerializer({'user': created_user, 'token': token}).data
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -43,6 +40,8 @@ class UserViewSet(
         if user is not None:
             token = Token.objects.get(user=user)
 
-            return Response({"token": token.key})
+            serializer = TokenSerializer({'user': user, 'token': token})
+
+            return Response(serializer.data)
         else:
             raise AuthenticationFailed()
