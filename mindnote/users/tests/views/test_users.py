@@ -74,7 +74,7 @@ class UserViewSetTestCase(APITestCase):
         }
         response = self.client.post('/users/tokens/', data=json.dumps(wrong_payload), content_type='application/json')
 
-        assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
+        assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
         assert_that(response.data['detail']).is_equal_to(AuthenticationFailed.default_detail)
         assert_that(hasattr(response.data, 'user')).is_false()
 
@@ -90,7 +90,7 @@ class UserViewSetTestCase(APITestCase):
     def test_should_not_get_my_profile(self):
         response = self.client.post('/users/my-profile/', content_type='application/json')
 
-        assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
+        assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
         assert_that(hasattr(response.data, 'user')).is_false()
 
     @staticmethod
