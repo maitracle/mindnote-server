@@ -1,5 +1,6 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from django_rest_framework_mango.mixins import PermissionMixin, QuerysetMixin
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin, CreateModelMixin, \
     ListModelMixin
@@ -40,6 +41,11 @@ class ArticleViewSet(
         return queryset.filter(user=self.request.user.id)
 
 
+class IsArticleOwnerUserOnly(permissions.BasePermission):
+    def has_object_permission(self, request, views, obj):
+        return obj.article.user == request.user
+
+
 class NoteViewSet(
     QuerysetMixin, PermissionMixin,
     CreateModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin,
@@ -47,8 +53,15 @@ class NoteViewSet(
 ):
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
-    permission_classes = (IsOwner,)
+    permission_classes = (IsArticleOwnerUserOnly,)
     permission_by_actions = {
-        'create': (IsAuthenticated,),
-        'my_list': (IsAuthenticated,),
+        'list': (IsAuthenticated,),
     }
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('article',)
+
+    def list(self, request, *args, **kwargs):
+        if 'article' not in request.query_params:
+            # Todo(maitracle): 적절한 에러 메시지를 세팅한다.
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return super().list(request, *args, **kwargs)

@@ -52,7 +52,7 @@ class ArticlesViewSetTestCase(APITestCase):
     def test_should_get_own_list(self):
         user = baker.make('users.User')
         article_quantity = 5
-        articles = baker.make('articles.Article', user=user, _quantity=5)
+        articles = baker.make('articles.Article', user=user, _quantity=article_quantity)
 
         self.client.force_authenticate(user=user)
         response = self.client.get('/articles/my-list/')
