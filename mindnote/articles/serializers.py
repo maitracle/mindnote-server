@@ -12,3 +12,17 @@ class ArticleSerializer(serializers.ModelSerializer):
             'subject',
             'description',
         )
+
+
+class NoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = (
+            'id',
+            'article',
+            'contents',
+        )
+
+    def validate(self, attrs):
+        print('validate')
+        pass

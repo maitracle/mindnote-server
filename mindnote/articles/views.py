@@ -1,12 +1,14 @@
 from django_rest_framework_mango.mixins import PermissionMixin, QuerysetMixin
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
-from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin
+from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin, CreateModelMixin, \
+    ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from articles.models import Article
-from articles.serializers import ArticleSerializer
+from articles.models import Article, Note
+from articles.serializers import ArticleSerializer, NoteSerializer
+from commons.mixins import CreateWithRequestUserMixin, MyListMixin
 
 
 class IsOwner(permissions.BasePermission):
@@ -16,7 +18,7 @@ class IsOwner(permissions.BasePermission):
 
 class ArticleViewSet(
     QuerysetMixin, PermissionMixin,
-    RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin,
+    CreateWithRequestUserMixin, MyListMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Article.objects.all()
@@ -27,17 +29,6 @@ class ArticleViewSet(
         'my_list': (IsAuthenticated,),
     }
 
-    def create(self, request, *args, **kwargs):
-        data = {
-            **request.data,
-            'user': request.user.id,
-        }
-        article_serializer = self.get_serializer(data=data)
-        article_serializer.is_valid(raise_exception=True)
-        article_serializer.save()
-
-        return Response(article_serializer.data, status=status.HTTP_201_CREATED)
-
     @action(detail=False, methods=['get'], url_path='my-list')
     def my_list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -47,3 +38,17 @@ class ArticleViewSet(
 
     def my_list_queryset(self, queryset):
         return queryset.filter(user=self.request.user.id)
+
+
+class NoteViewSet(
+    QuerysetMixin, PermissionMixin,
+    CreateModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = Note.objects.all()
+    serializer_class = NoteSerializer
+    permission_classes = (IsOwner,)
+    permission_by_actions = {
+        'create': (IsAuthenticated,),
+        'my_list': (IsAuthenticated,),
+    }
