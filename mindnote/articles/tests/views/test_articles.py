@@ -70,18 +70,18 @@ class ArticlesViewSetTestCase(APITestCase):
 
     def test_should_retrieve(self):
         user = baker.make('users.User')
-        article = baker.make('articles.Article', user=user.id)
+        article = baker.make('articles.Article', user=user)
 
         self.client.force_authenticate(user=user)
-        response = self.client.get(f'/articles/{article.id}')
+        response = self.client.get(f'/articles/{article.id}/')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
-        self._assert_article(response['data'], article)
+        self._assert_article(response.data, article)
 
     def test_should_not_retrieve_unauthorized(self):
         article = baker.make('articles.Article')
 
-        response = self.client.get(f'/articles/{article.id}')
+        response = self.client.get(f'/articles/{article.id}/')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
 
@@ -91,19 +91,19 @@ class ArticlesViewSetTestCase(APITestCase):
         assert_that(user.id).is_not_equal_to(origin_article.user.id)
 
         self.client.force_authenticate(user=user)
-        response = self.client.get(f'/articles/{origin_article.id}')
+        response = self.client.get(f'/articles/{origin_article.id}/')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
 
     def test_should_update(self):
         user = baker.make('users.User')
-        article = baker.make('articles.Article', user=user.id)
+        article = baker.make('articles.Article', user=user)
         update_data = {
             'subject': 'changed subject',
         }
 
         self.client.force_authenticate(user=user)
-        response = self.client.update(f'/articles/{article.id}', data=json.dumps(update_data),
+        response = self.client.patch(f'/articles/{article.id}/', data=json.dumps(update_data),
                                       content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
@@ -117,7 +117,7 @@ class ArticlesViewSetTestCase(APITestCase):
             'subject': 'changed subject',
         }
 
-        response = self.client.update(f'/articles/{origin_article.id}', data=json.dumps(update_data),
+        response = self.client.patch(f'/articles/{origin_article.id}/', data=json.dumps(update_data),
                                       content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
@@ -134,7 +134,7 @@ class ArticlesViewSetTestCase(APITestCase):
         }
 
         self.client.force_authenticate(user=user)
-        response = self.client.update(f'/articles/{origin_article.id}', data=json.dumps(update_data),
+        response = self.client.patch(f'/articles/{origin_article.id}/', data=json.dumps(update_data),
                                       content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
@@ -143,10 +143,10 @@ class ArticlesViewSetTestCase(APITestCase):
 
     def test_should_delete(self):
         user = baker.make('users.User')
-        article = baker.make('articles.Article', user=user.id)
+        article = baker.make('articles.Article', user=user)
 
         self.client.force_authenticate(user=user)
-        response = self.client.delete(f'/articles/{article.id}')
+        response = self.client.delete(f'/articles/{article.id}/')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_204_NO_CONTENT)
         assert_that(Article.objects.filter(id=article.id).exists()).is_false()
@@ -154,7 +154,7 @@ class ArticlesViewSetTestCase(APITestCase):
     def test_should_not_delete_unauthorized(self):
         article = baker.make('articles.Article')
 
-        response = self.client.delete(f'/articles/{article.id}')
+        response = self.client.delete(f'/articles/{article.id}/')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
         assert_that(Article.objects.filter(id=article.id).exists()).is_true()
@@ -165,7 +165,7 @@ class ArticlesViewSetTestCase(APITestCase):
         assert_that(user.id).is_not_equal_to(article.user.id)
 
         self.client.force_authenticate(user=user)
-        response = self.client.delete(f'/articles/{article.id}')
+        response = self.client.delete(f'/articles/{article.id}/')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
         assert_that(Article.objects.filter(id=article.id).exists()).is_true()
