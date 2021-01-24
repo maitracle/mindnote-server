@@ -37,6 +37,7 @@ PACKAGE_APPS = [
 PROJECT_APPS = [
     'commons',
     'users',
+    'articles',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
