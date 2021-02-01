@@ -82,13 +82,13 @@ class UserViewSetTestCase(APITestCase):
         user = baker.make('users.User')
 
         self.client.force_authenticate(user=user)
-        response = self.client.post('/users/my-profile/', content_type='application/json')
+        response = self.client.get('/users/my-profile/', content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
         self._assert_user(response.data, user)
 
     def test_should_not_get_my_profile(self):
-        response = self.client.post('/users/my-profile/', content_type='application/json')
+        response = self.client.get('/users/my-profile/', content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
         assert_that(hasattr(response.data, 'user')).is_false()
