@@ -54,7 +54,7 @@ class UserViewSet(
         else:
             raise AuthenticationFailed()
 
-    @action(detail=False, methods=['post'], url_path='my-profile')
+    @action(detail=False, methods=['get'], url_path='my-profile')
     def my_profile(self, request, *args, **kwargs):
         serializer = self.get_serializer(request.user)
 
