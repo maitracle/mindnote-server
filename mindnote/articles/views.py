@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from django_rest_framework_mango.mixins import PermissionMixin, QuerysetMixin
+from django_rest_framework_mango.mixins import PermissionMixin, QuerysetMixin, SerializerMixin
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin, CreateModelMixin, \
@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from articles.models import Article, Note
-from articles.serializers import ArticleSerializer, NoteSerializer
+from articles.serializers import ArticleSerializer, NoteSerializer, RetrieveArticleSerializer
 from commons.mixins import CreateWithRequestUserMixin, MyListMixin
 
 
@@ -18,12 +18,15 @@ class IsOwner(permissions.BasePermission):
 
 
 class ArticleViewSet(
-    QuerysetMixin, PermissionMixin,
+    QuerysetMixin, PermissionMixin, SerializerMixin,
     CreateWithRequestUserMixin, MyListMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
+    serializer_class_by_actions = {
+        'retrieve': RetrieveArticleSerializer
+    }
     permission_classes = (IsOwner,)
     permission_by_actions = {
         'create': (IsAuthenticated,),

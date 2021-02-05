@@ -34,3 +34,19 @@ class NoteSerializer(serializers.ModelSerializer):
                 raise PermissionDenied(detail='note can be created at own article')
 
         return attrs
+
+
+class RetrieveArticleSerializer(serializers.ModelSerializer):
+    notes = NoteSerializer(many=True)
+
+    class Meta:
+        model = Article
+        fields = (
+            'id',
+            'user',
+            'subject',
+            'description',
+            'notes',
+            'created_at',
+            'updated_at',
+        )
