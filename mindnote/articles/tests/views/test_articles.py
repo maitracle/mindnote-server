@@ -135,8 +135,9 @@ class ArticlesViewSetTestCase(APITestCase):
         }
 
         self.client.force_authenticate(user=user)
-        response = self.client.patch(f'/articles/{article.id}/', data=json.dumps(update_data),
-                                      content_type='application/json')
+        response = self.client.patch(f'/articles/{article.id}/',
+                                     data=json.dumps(update_data),
+                                     content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
         changed_article = Article.objects.get(id=article.id)
@@ -150,7 +151,7 @@ class ArticlesViewSetTestCase(APITestCase):
         }
 
         response = self.client.patch(f'/articles/{origin_article.id}/', data=json.dumps(update_data),
-                                      content_type='application/json')
+                                     content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
         not_changed_article = Article.objects.get(id=origin_article.id)
@@ -167,7 +168,7 @@ class ArticlesViewSetTestCase(APITestCase):
 
         self.client.force_authenticate(user=user)
         response = self.client.patch(f'/articles/{origin_article.id}/', data=json.dumps(update_data),
-                                      content_type='application/json')
+                                     content_type='application/json')
 
         assert_that(response.status_code).is_equal_to(status.HTTP_403_FORBIDDEN)
         not_changed_article = Article.objects.get(id=origin_article.id)

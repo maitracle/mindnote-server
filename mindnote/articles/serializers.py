@@ -50,14 +50,16 @@ class ConnectionSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
-        if attrs['article'].user != self.context['request'].user:
-            raise PermissionDenied(detail='connection can be created at own article')
+        if 'article' in attrs:
+            if attrs['article'].user != self.context['request'].user:
+                raise PermissionDenied(detail='connection can be created at own article')
 
-        if attrs['left_note'] == attrs['right_note']:
-            raise ValidationError(detail="notes can't be same")
+        if 'left_note' in attrs and 'right_note' in attrs:
+            if attrs['left_note'] == attrs['right_note']:
+                raise ValidationError(detail="notes can't be same")
 
-        if attrs['left_note'].article != attrs['article'] or attrs['right_note'].article != attrs['article']:
-            raise ValidationError(detail='notes and article are not matched')
+            if attrs['left_note'].article != attrs['article'] or attrs['right_note'].article != attrs['article']:
+                raise ValidationError(detail='notes and article are not matched')
 
         return attrs
 
