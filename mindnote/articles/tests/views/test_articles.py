@@ -77,6 +77,38 @@ class ArticlesViewSetTestCase(APITestCase):
 
         assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
         self._assert_article(response.data, article)
+        assert_that(response.data['notes']).is_equal_to([])
+
+    def test_should_retrieve_with_notes_and_connections(self):
+        user = baker.make('users.User')
+        article = baker.make('articles.Article', user=user)
+        own_notes_quantity = 5
+        another_user_notes_quantity = 7
+        own_notes = baker.make('articles.Note', article=article, _quantity=own_notes_quantity)
+        _another_user_notes = baker.make('articles.Note', _quantity=another_user_notes_quantity)
+        own_connections_quantity = 4
+        another_user_connections_quantity = 6
+        own_connections = baker.make('articles.Connection', article=article, _quantity=own_connections_quantity)
+        _another_user_connections = baker.make('articles.Connection', _quantity=another_user_connections_quantity)
+
+        self.client.force_authenticate(user=user)
+        response = self.client.get(f'/articles/{article.id}/')
+
+        assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
+        self._assert_article(response.data, article)
+
+        assert_that(response.data['notes']).is_length(own_notes_quantity)
+        for response_note, expected_note in zip(response.data['notes'], own_notes):
+            assert_that(response_note['id']).is_equal_to(expected_note.id)
+            assert_that(response_note['article']).is_equal_to(article.id)
+            assert_that(response_note['contents']).is_equal_to(expected_note.contents)
+
+        for response_connection, expected_connection in zip(response.data['connections'], own_connections):
+            assert_that(response_connection['id']).is_equal_to(expected_connection.id)
+            assert_that(response_connection['article']).is_equal_to(article.id)
+            assert_that(response_connection['left_note']).is_equal_to(expected_connection.left_note.id)
+            assert_that(response_connection['right_note']).is_equal_to(expected_connection.right_note.id)
+            assert_that(response_connection['reason']).is_equal_to(expected_connection.reason)
 
     def test_should_not_retrieve_unauthorized(self):
         article = baker.make('articles.Article')
