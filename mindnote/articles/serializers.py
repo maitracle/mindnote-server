@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from articles.models import Article, Note
+from articles.models import Article, Note, Connection
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -36,8 +36,23 @@ class NoteSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class ConnectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Connection
+        fields = (
+            'id',
+            'article',
+            'left_note',
+            'right_note',
+            'reason',
+            'created_at',
+            'updated_at',
+        )
+
+
 class RetrieveArticleSerializer(serializers.ModelSerializer):
     notes = NoteSerializer(many=True)
+    connections = ConnectionSerializer(many=True)
 
     class Meta:
         model = Article
@@ -47,6 +62,7 @@ class RetrieveArticleSerializer(serializers.ModelSerializer):
             'subject',
             'description',
             'notes',
+            'connections',
             'created_at',
             'updated_at',
         )
