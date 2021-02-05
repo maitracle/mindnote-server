@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from articles.models import Article, Note, Connection
 
@@ -48,6 +48,18 @@ class ConnectionSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         )
+
+    def validate(self, attrs):
+        if attrs['article'].user != self.context['request'].user:
+            raise PermissionDenied(detail='connection can be created at own article')
+
+        if attrs['left_note'] == attrs['right_note']:
+            raise ValidationError(detail="notes can't be same")
+
+        if attrs['left_note'].article != attrs['article'] or attrs['right_note'].article != attrs['article']:
+            raise ValidationError(detail='notes and article are not matched')
+
+        return attrs
 
 
 class RetrieveArticleSerializer(serializers.ModelSerializer):

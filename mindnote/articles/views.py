@@ -7,8 +7,8 @@ from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveM
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from articles.models import Article, Note
-from articles.serializers import ArticleSerializer, NoteSerializer, RetrieveArticleSerializer
+from articles.models import Article, Note, Connection
+from articles.serializers import ArticleSerializer, NoteSerializer, RetrieveArticleSerializer, ConnectionSerializer
 from commons.mixins import CreateWithRequestUserMixin, MyListMixin
 
 
@@ -68,3 +68,13 @@ class NoteViewSet(
             # Todo(maitracle): 적절한 에러 메시지를 세팅한다.
             return Response(status=status.HTTP_400_BAD_REQUEST)
         return super().list(request, *args, **kwargs)
+
+
+class ConnectionViewSet(
+    QuerysetMixin, PermissionMixin,
+    CreateModelMixin, UpdateModelMixin, DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = Connection.objects.all()
+    serializer_class = ConnectionSerializer
+    permission_classes = (IsArticleOwnerUserOnly,)
