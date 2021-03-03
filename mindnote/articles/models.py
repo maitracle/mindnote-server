@@ -5,7 +5,8 @@ from commons.models import BaseModel
 class Article(BaseModel):
     user = models.ForeignKey('users.User', related_name='articles', on_delete=models.CASCADE)
     subject = models.CharField(max_length=512)
-    description = models.TextField(blank=True)
+    description = models.CharField(max_length=512, blank=True)
+    body = models.TextField(blank=True)
 
 
 class Note(BaseModel):
