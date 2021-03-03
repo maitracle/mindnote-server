@@ -12,3 +12,6 @@ __pycache__
 
 # environments file
 .env
+
+# virtual envs
+venv
