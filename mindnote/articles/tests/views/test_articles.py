@@ -12,7 +12,7 @@ class ArticlesViewSetTestCase(APITestCase):
     def test_create_article(self):
         article_data = {
             'subject': 'test subject',
-            'description': 'test description'
+            'description': 'test description',
         }
         user = baker.make('users.User')
 
@@ -30,7 +30,7 @@ class ArticlesViewSetTestCase(APITestCase):
 
     def test_should_not_create_bad_request(self):
         article_data = {
-            'description': 'test description'
+            'description': 'test description',
         }
         user = baker.make('users.User')
 
@@ -42,7 +42,7 @@ class ArticlesViewSetTestCase(APITestCase):
     def test_should_not_create_unauthorized(self):
         article_data = {
             'subject': 'test subject',
-            'description': 'test description'
+            'description': 'test description',
         }
 
         response = self.client.post('/articles/', data=json.dumps(article_data), content_type='application/json')
@@ -132,6 +132,7 @@ class ArticlesViewSetTestCase(APITestCase):
         article = baker.make('articles.Article', user=user)
         update_data = {
             'subject': 'changed subject',
+            'body': 'changed body',
         }
 
         self.client.force_authenticate(user=user)
@@ -208,3 +209,4 @@ class ArticlesViewSetTestCase(APITestCase):
         assert_that(response_article['user']).is_equal_to(expected_article.user.id)
         assert_that(response_article['subject']).is_equal_to(expected_article.subject)
         assert_that(response_article['description']).is_equal_to(expected_article.description)
+        assert_that(response_article['body']).is_equal_to(expected_article.body)
