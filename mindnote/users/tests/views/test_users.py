@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.test import APITestCase
 
+from services.google import GoogleClientWithTest
 from users.models import User
 
 
@@ -92,6 +93,48 @@ class UserViewSetTestCase(APITestCase):
 
         assert_that(response.status_code).is_equal_to(status.HTTP_401_UNAUTHORIZED)
         assert_that(hasattr(response.data, 'user')).is_false()
+
+    def test_should_sign_in_with_google(self):
+        mocked_google_sign_in_payload = {
+            'o_auth_token': GoogleClientWithTest.valid_google_o_auth_token
+        }
+        user = baker.make('users.User', **GoogleClientWithTest.mocked_google_account_info)
+        expected_token, _created = Token.objects.get_or_create(user=user)
+
+        response = self.client.post('/users/google/', data=json.dumps(mocked_google_sign_in_payload),
+                                    content_type='application/json')
+
+        assert_that(response.status_code).is_equal_to(status.HTTP_200_OK)
+        assert_that(response.data['token']).is_equal_to(expected_token.key)
+        self._assert_user(response.data['user'], user)
+
+    def test_should_sign_up_with_google(self):
+        mocked_google_sign_in_payload = {
+            'o_auth_token': GoogleClientWithTest.valid_google_o_auth_token
+        }
+        google_account_email = GoogleClientWithTest.mocked_google_account_info['email']
+
+        assert_that(User.objects.filter(email=google_account_email).exists()).is_false()
+
+        response = self.client.post('/users/google/', data=json.dumps(mocked_google_sign_in_payload),
+                                    content_type='application/json')
+
+        created_user = User.objects.get(email=google_account_email)
+        created_token = Token.objects.get(user=created_user)
+        assert_that(response.status_code).is_equal_to(status.HTTP_201_CREATED)
+        assert_that(response.data['token']).is_equal_to(created_token.key)
+        self._assert_user(response.data['user'], created_user)
+
+    def test_should_not_sign_up_when_google_o_auth_token_is_invalid(self):
+        mocked_google_sign_in_payload = {
+            'o_auth_token': GoogleClientWithTest.invalid_google_o_auth_token
+        }
+
+        response = self.client.post('/users/google/', data=json.dumps(mocked_google_sign_in_payload),
+                                    content_type='application/json')
+
+        assert_that(response.status_code).is_equal_to(status.HTTP_400_BAD_REQUEST)
+        assert_that(response.data[0]).is_equal_to('Failed to get google account information with o auth token')
 
     @staticmethod
     def _assert_user(response_user, expect_user):

@@ -4,11 +4,12 @@ from django_rest_framework_mango.mixins import PermissionMixin
 from rest_framework import viewsets, status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin, RetrieveModelMixin
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
+from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from services.google import GoogleClient
 from users.models import User
 from users.serializers import UserSerializer, TokenSerializer
 
@@ -59,3 +60,18 @@ class UserViewSet(
         serializer = self.get_serializer(request.user)
 
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def google(self, request, *args, **kwargs):
+        try:
+            o_auth_token = request.data['o_auth_token']
+        except KeyError as e:
+            raise ValidationError(f'{e} is required')
+
+        user, is_created = GoogleClient.instance().get_user_or_create_with_google(o_auth_token)
+        token = user.get_token()
+
+        response_data = TokenSerializer({'user': user, 'token': token}).data
+        response_status = status.HTTP_201_CREATED if is_created else status.HTTP_200_OK
+
+        return Response(response_data, status=response_status)

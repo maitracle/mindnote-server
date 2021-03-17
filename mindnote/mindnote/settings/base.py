@@ -147,3 +147,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+# for request
+DEFAULT_TIMEOUT = 10

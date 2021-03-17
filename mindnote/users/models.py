@@ -50,3 +50,9 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
 
     def __str__(self):
         return self.email if self.email else str(self.id)
+
+    def get_token(self):
+        from rest_framework.authtoken.models import Token
+        token, _created = Token.objects.get_or_create(user=self)
+
+        return token
