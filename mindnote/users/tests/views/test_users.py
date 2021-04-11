@@ -28,8 +28,7 @@ class UserViewSetTestCase(APITestCase):
 
         assert_that(response.data['user']['id']).is_equal_to(user.id)
         self._assert_user(response.data['user'], user)
-        hashed_password_prefix = 'pbkdf2_sha256$216000$'
-        assert_that(response.data['user']['password'].startswith(hashed_password_prefix)).is_true()
+        assert_that(user.check_password(user_data['password'])).is_true()
 
     def test_should_not_create(self):
         user_data = {
