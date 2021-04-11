@@ -41,7 +41,7 @@ class ArticleViewSet(
         return Response(serializer.data)
 
     def my_list_queryset(self, queryset):
-        return queryset.filter(user=self.request.user.id)
+        return queryset.filter(user=self.request.user.id).filter(is_published=False)
 
 
 class IsArticleOwnerUserOnly(permissions.BasePermission):

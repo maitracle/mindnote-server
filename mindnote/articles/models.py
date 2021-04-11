@@ -8,6 +8,10 @@ class Article(BaseModel):
     description = models.CharField(max_length=512, blank=True)
     body = models.TextField(blank=True)
 
+    @property
+    def is_published(self):
+        return self.body
+
 
 class Note(BaseModel):
     article = models.ForeignKey('articles.Article', related_name='notes', on_delete=models.CASCADE)
